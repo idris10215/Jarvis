@@ -16,16 +16,12 @@ if __name__ == "__main__":
     while True:
 
         r = sr.Recognizer()
-
-        with sr.Microphone() as source:
-            print("Listening...s")
-            audio = r.listen(source)
-
         # recognize speech using Sphinx
         try:
+            with sr.Microphone() as source:
+                print("Listening...")
+                audio = r.listen(source, timeout=2, phrase_time_limit=2)
             command = r.recognize_google(audio)
             print(command)
-        except sr.UnknownValueError:
-            print("Sphinx could not understand audio")
-        except sr.RequestError as e:
-            print("Sphinx error; {0}".format(e))        
+        except Exception as e:
+            print("Error; {0}".format(e))        
