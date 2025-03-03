@@ -9,46 +9,69 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 
-def processCommand(c):
-    if "open google" in c.lower():
+def processCommand(command):
+    command = command.lower()
+
+    if "open google" in command:
         speak("Opening Google")
         webbrowser.open("https://www.google.com")
-    elif "open youtube" in c.lower():
-        speak("Opening Youtube")
+    
+    elif "open youtube" in command:
+        speak("Opening YouTube")
         webbrowser.open("https://www.youtube.com")
-    elif "open facebook" in c.lower():
+    
+    elif "open facebook" in command:
         speak("Opening Facebook")
         webbrowser.open("https://www.facebook.com")
-    elif "open instagram" in c.lower():
+    
+    elif "open instagram" in command:
         speak("Opening Instagram")
         webbrowser.open("https://www.instagram.com")
-    elif "open linkedin" in c.lower():
-        speak("Opening Linkedin")
+    
+    elif "open linkedin" in command:
+        speak("Opening LinkedIn")
         webbrowser.open("https://www.linkedin.com")
 
+    elif "search" in command:
+        speak("What do you want to search for?")
+        with sr.Microphone() as source:
+            print("Listening for search query...")
+            try:
+                audio = recognizer.listen(source, timeout=5)
+                search_query = recognizer.recognize_google(audio)
+                speak(f"Searching for {search_query}")
+                webbrowser.open(f"https://www.google.com/search?q={search_query}")
+            except sr.UnknownValueError:
+                speak("Sorry, I couldn't understand that. Please try again.")
+            except sr.RequestError:
+                speak("There was an error with the speech recognition service.")
 
+    elif "exit" in command or "stop" in command:
+        speak("Goodbye!")
+        exit()
 
 if __name__ == "__main__":
-    speak("Hello, I am Jarvis your personal assistant")
+    speak("Hello, I am Jarvis, your personal assistant!")
 
     while True:
-
-        r = sr.Recognizer()
-        # recognize speech using Sphinx
         try:
             with sr.Microphone() as source:
-                print("Listening...")
-                audio = r.listen(source, timeout=2, phrase_time_limit=2)
-            word = r.recognize_google(audio)
-            if(word.lower() == "jarvis"):
-                speak("Yaa")
-                # listen to command
-                with sr.Microphone() as source:
-                    print("Jarvis Active...")
-                    audio = r.listen(source)
-                    command = r.recognize_google(audio)
+                print("Say 'Jarvis' to activate...")
+                audio = recognizer.listen(source, timeout=5)
+                wake_word = recognizer.recognize_google(audio).lower()
 
-                    processCommand(command)
-            
-        except Exception as e:
-            print("Error; {0}".format(e))        
+                if "jarvis" in wake_word:
+                    speak("Yes, how can I assist?")
+                    with sr.Microphone() as source:
+                        print("Listening for command...")
+                        audio = recognizer.listen(source, timeout=5)
+                        command = recognizer.recognize_google(audio)
+                        processCommand(command)
+
+        except sr.UnknownValueError:
+            print("Didn't catch that. Please try again.")
+        except sr.RequestError:
+            print("Speech recognition service error.")
+        except KeyboardInterrupt:
+            speak("Goodbye!")
+            break
